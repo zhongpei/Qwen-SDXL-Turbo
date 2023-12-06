@@ -16,7 +16,7 @@ from transformers.generation import GenerationConfig
 from diffusers import AutoPipelineForText2Image
 import torch
 
-DEFAULT_CKPT_PATH = './output_qwen'
+DEFAULT_CKPT_PATH = 'hahahafofo/Qwen-1.8B-Stable-Diffusion-Prompt'
 
 
 def _get_args():
@@ -154,7 +154,7 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
             return
         item = _task_history.pop(-1)
         _chatbot.pop(-1)
-        yield from predict(item[0], _chatbot, _task_history)
+        yield from predict(item[0], _chatbot, _task_history, prompt_template)
 
     def reset_user_input():
         return gr.update(value="")
@@ -173,10 +173,10 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
                 image = gr.Image(type="pil")
             with gr.Column(scale=1, min_width=600):
                 with gr.Row():
-                    temperature = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, default=0.9, label="Temperature")
-                    top_p = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, default=0.9, label="Top-p")
-                    top_k = gr.Slider(minimum=0, maximum=100, step=1, default=0, label="Top-k")
-                    max_new_tokens = gr.Slider(minimum=1, maximum=1024, step=1, default=512, label="Max New Tokens")
+                    temperature = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, value=0.9, label="Temperature")
+                    top_p = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, value=0.9, label="Top-p")
+                    top_k = gr.Slider(minimum=0, maximum=100, step=1, value=0, label="Top-k")
+                    max_new_tokens = gr.Slider(minimum=1, maximum=1024, step=1, value=512, label="Max New Tokens")
                     prompt_template = gr.Textbox(
                         lines=1,
                         label='Prompt Template',
