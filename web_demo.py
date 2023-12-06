@@ -177,6 +177,7 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
         with gr.Row():
             with gr.Column(scale=1, min_width=600):
                 image = gr.Image(type="pil")
+                chatbot = gr.Chatbot(label='Qwen-Chat', elem_classes="control-height")
 
             with gr.Column(scale=1, min_width=600):
                 with gr.Row():
@@ -197,7 +198,7 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
                     label='Prompt Template',
                     value="必须使用英语根据主题描述一副画面:"
                 )
-                chatbot = gr.Chatbot(label='Qwen-Chat', elem_classes="control-height")
+
                 query = gr.Textbox(lines=4, label='Input')
                 task_history = gr.State([])
 
