@@ -107,7 +107,8 @@ def _save_image2html(image, query, prompt):
     image.save(image_path, "PNG", exif=exif_bytes)
     # 创建 HTML 内容
     # 初始 HTML 结构
-    html_start = "<html><head><title>Image and Prompt History</title></head><body><h1>Image and Prompt History</h1><ul>"
+    html_start = """<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8">
+    <title>Image and Prompt History</title></head><body><h1>Image and Prompt History</h1><ul>"""
     html_end = "</ul></body></html>"
     # 将 HTML 内容写入文件
     html_file_path = os.path.join(OUTPUT_HTML_DIR, f"{datetime.datetime.now().strftime('%Y-%m-%d')}.html")
@@ -230,11 +231,11 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
         html_file_path = f"{datetime.datetime.now().strftime('%Y-%m-%d')}.html"
         html_fns = [fn for fn in os.listdir(OUTPUT_HTML_DIR) if fn.endswith(".html")]
 
-        gr.Markdown(f'<a href="{file_server}{os.path.join(OUTPUT_HTML_DIR, html_file_path)}" target="_blank">{html_file_path}</a>')
+        gr.Markdown(f'<a href="{file_server}{html_file_path}" target="_blank">{html_file_path}</a>')
         for fn in html_fns:
             if fn == html_file_path:
                 continue
-            gr.Markdown(f'<a href="{file_server}{os.path.join(OUTPUT_HTML_DIR, fn)} target="_blank"">{fn}</a>')
+            gr.Markdown(f'<a href="{file_server}{fn} target="_blank"">{fn}</a>')
         with gr.Row():
             with gr.Column(scale=1, min_width=600):
                 image = gr.Image(type="pil")
