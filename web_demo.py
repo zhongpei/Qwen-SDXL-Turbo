@@ -183,10 +183,12 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
                     top_p = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, value=0.9, label="Top-p")
                     top_k = gr.Slider(minimum=0, maximum=100, step=1, value=0, label="Top-k")
                     max_new_tokens = gr.Slider(minimum=1, maximum=1024, step=1, value=100, label="Max New Tokens")
+                    prompt_system_radio = gr.Radio(["中英文翻译", "文言文", "画家", "剧情"], label='prompt system',
+                                                   info="角色")
                     prompt_system = gr.Textbox(
                         lines=1,
                         label='System Template',
-                        value="你是绘画大师，必须使用英语根据主题描述一副画面，增加元素的具体性和细节，加强情况和相关性。如果有人物，对面部表情、动作和场景的感觉增加细节。"
+                        value="你擅长翻译中文到英语。"
                     )
                     prompt_template = gr.Textbox(
                         lines=1,
@@ -203,6 +205,14 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
             regen_btn = gr.Button("🤔️ Regenerate (重试)")
             image_btn = gr.Button("🎨 Image (生成)")
 
+        PROMPT_SYSTEM_DICT = {
+            "中英文翻译": "你擅长翻译中文到英语。",
+            "文言文": "你擅长文言文翻译为英语。",
+            "画家": "你是绘画大师，擅长描绘画面细节。",
+            "剧情": "你是剧作家，擅长创作连续的漫画脚本。"
+        }
+        prompt_system_radio.change(lambda val: prompt_system.update(PROMPT_SYSTEM_DICT[val]),
+                                   inputs=[prompt_system_radio], outputs=[])
         temperature.change(lambda val: config.update(temperature=val), inputs=[temperature], outputs=[])
         top_k.change(lambda val: config.update(top_k=val), inputs=[top_k], outputs=[])
         top_p.change(lambda val: config.update(top_p=val), inputs=[top_p], outputs=[])
