@@ -148,13 +148,13 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
         print(f"{prompt}")
         return image_pipe(prompt=prompt, num_inference_steps=1, guidance_scale=0.0).images[0]
 
-    def regenerate(_chatbot, _task_history, prompt_template):
+    def regenerate(_chatbot, _task_history, ):
         if not _task_history:
             yield _chatbot
             return
         item = _task_history.pop(-1)
         _chatbot.pop(-1)
-        yield from predict(item[0], _chatbot, _task_history, prompt_template)
+        yield from predict(item[0], _chatbot, _task_history, "")
 
     def reset_user_input():
         return gr.update(value="")
@@ -217,7 +217,7 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
         submit_btn.click(reset_user_input, [], [query])
         empty_btn.click(reset_state, [chatbot, task_history], outputs=[chatbot], show_progress=True)
         image_btn.click(draw_image, [chatbot, task_history], outputs=[image], show_progress=True)
-        regen_btn.click(regenerate, [chatbot, task_history, prompt_template], [chatbot], show_progress=True)
+        regen_btn.click(regenerate, [chatbot, task_history], [chatbot], show_progress=True)
 
     demo.queue().launch(
         share=args.share,
