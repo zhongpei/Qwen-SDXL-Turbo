@@ -96,7 +96,7 @@ def postprocess(self, y):
 gr.Chatbot.postprocess = postprocess
 
 
-def _save_image2html(image, query, prompt):
+def _save_image2html(image, query, prompt, args):
     # 将文本信息编码为 JSON 并保存到 EXIF
     exif_dict = {"0th": {}, "Exif": {}, "1st": {}, "thumbnail": None, "GPS": {}}
     exif_dict["0th"][piexif.ImageIFD.ImageDescription] = json.dumps({"prompt": prompt})
@@ -107,6 +107,8 @@ def _save_image2html(image, query, prompt):
     image.save(image_path, "PNG", exif=exif_bytes)
     # 创建 HTML 内容
     # 初始 HTML 结构
+    file_server = f"http://{get_local_ip()}:{args.file_server_port}/"
+
     html_start = """<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8">
     <title>Image and Prompt History</title></head><body><h1>Image and Prompt History</h1><ul>"""
     html_end = "</ul></body></html>"
@@ -115,10 +117,9 @@ def _save_image2html(image, query, prompt):
     # 创建新的列表项
     new_list_item = f"""
         <li>
-            <p>Image Path: {image_path}</p>
             <p>Prompt: {prompt}</p>
-            <p>Query: {query}</p>
-            <img src="{image_path}" alt="Generated Image" style="max-width: 100%; height: auto;">
+            <p>Input: {query}</p>
+            <img src="{file_server}{image_path}" alt="{image_path}" style="max-width: 100%; height: auto;">
         </li>
     """
 
@@ -195,7 +196,7 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
         _task_history.append((_query, full_response))
         print(f"Qwen-Chat: {_parse_text(full_response)}")
 
-    def draw_image(_chatbot, _task_history, num_inference_steps):
+    def draw_image(_chatbot, _task_history, num_inference_steps, args):
         if len(_task_history) == 0:
             return
         prompt = _task_history[-1][-1]
@@ -204,7 +205,7 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
         print(f"===\n{_chatbot} \n\n{_task_history} ====\n")
         print(f"{prompt}")
         image_pil = image_pipe(prompt=prompt, num_inference_steps=num_inference_steps, guidance_scale=0.0).images[0]
-        _save_image2html(image_pil, query=_chatbot[-1][0], prompt=prompt)
+        _save_image2html(image_pil, query=_chatbot[-1][0], prompt=prompt, args=args)
         return image_pil
 
     def regenerate(_chatbot, _task_history, prompt_system):
@@ -299,7 +300,8 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
                          show_progress=True)
         submit_btn.click(reset_user_input, [], [query])
         empty_btn.click(reset_state, [chatbot, task_history], outputs=[chatbot], show_progress=True)
-        image_btn.click(draw_image, [chatbot, task_history, num_inference_steps], outputs=[image], show_progress=True)
+        image_btn.click(draw_image, [chatbot, task_history, num_inference_steps, args], outputs=[image],
+                        show_progress=True)
         regen_btn.click(regenerate, [chatbot, task_history, prompt_system], [chatbot], show_progress=True)
 
     demo.queue().launch(
