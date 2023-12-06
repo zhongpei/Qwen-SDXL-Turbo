@@ -131,7 +131,7 @@ def _save_image2html(image, query, prompt):
     updated_html = existing_html.replace(html_end, new_list_item + html_end)
 
     # 将更新后的 HTML 写回文件
-    with open(html_file_path, 'w', encoding='utf-8') as file:
+    with open(html_file_path, 'w+', encoding='utf-8') as file:
         file.write(updated_html)
 
     return f"HTML content appended to {html_file_path}"
