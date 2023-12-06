@@ -144,7 +144,7 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
         _task_history.append((_query, full_response))
         print(f"Qwen-Chat: {_parse_text(full_response)}")
 
-    def draw_image(_chatbot, _task_history):
+    def draw_image(_chatbot, _task_history, num_inference_steps):
         if len(_task_history) == 0:
             return
         prompt = _task_history[-1][-1]
@@ -152,7 +152,7 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
             return
         print(f"===\n{_chatbot} \n\n{_task_history} ====\n")
         print(f"{prompt}")
-        return image_pipe(prompt=prompt, num_inference_steps=1, guidance_scale=0.0).images[0]
+        return image_pipe(prompt=prompt, num_inference_steps=num_inference_steps, guidance_scale=0.0).images[0]
 
     def regenerate(_chatbot, _task_history, prompt_system):
         if not _task_history:
@@ -176,6 +176,7 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
     with gr.Blocks() as demo:
         with gr.Row():
             with gr.Column(scale=1, min_width=600):
+                num_inference_steps = gr.Slider(minimum=1, maximum=60, step=1, value=4, label="Inference Steps")
                 image = gr.Image(type="pil")
                 query = gr.Textbox(lines=4, label='Input')
 
@@ -230,7 +231,7 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
                          show_progress=True)
         submit_btn.click(reset_user_input, [], [query])
         empty_btn.click(reset_state, [chatbot, task_history], outputs=[chatbot], show_progress=True)
-        image_btn.click(draw_image, [chatbot, task_history], outputs=[image], show_progress=True)
+        image_btn.click(draw_image, [chatbot, task_history, num_inference_steps], outputs=[image], show_progress=True)
         regen_btn.click(regenerate, [chatbot, task_history, prompt_system], [chatbot], show_progress=True)
 
     demo.queue().launch(
