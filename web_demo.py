@@ -108,7 +108,6 @@ def _save_image2html(image, query, prompt):
     # 创建 HTML 内容
     # 初始 HTML 结构
 
-
     html_start = """<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8">
     <title>Image and Prompt History</title></head><body><h1>Image and Prompt History</h1><ul>"""
     html_end = "</ul></body></html>"
@@ -266,9 +265,11 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
                 with gr.Tab(label="Config"):
                     with gr.Row():
                         temperature = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, value=0.9, label="Temperature")
-                        top_p = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, value=0.9, label="Top-p")
-                        top_k = gr.Slider(minimum=0, maximum=100, step=1, value=0, label="Top-k")
+                        top_p = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, value=1.0, label="Top-p")
+                        top_k = gr.Slider(minimum=0, maximum=100, step=1, value=50, label="Top-k")
                         max_new_tokens = gr.Slider(minimum=1, maximum=1024, step=1, value=100, label="Max New Tokens")
+                        repetition_penalty = gr.Slider(minimum=1.0, maximum=2.0, step=0.01, value=1.1,
+                                                       label="重复惩罚")
                     with gr.Row():
                         num_inference_steps = gr.Slider(minimum=1, maximum=60, step=1, value=4, label="Image Steps")
                 task_history = gr.State([])
@@ -293,6 +294,11 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
         max_new_tokens.change(
             lambda val: config.update(max_new_tokens=val),
             inputs=[max_new_tokens],
+            outputs=[],
+        )
+        repetition_penalty.change(
+            lambda val: config.update(repetition_penalty=val),
+            inputs=[repetition_penalty],
             outputs=[],
         )
 
