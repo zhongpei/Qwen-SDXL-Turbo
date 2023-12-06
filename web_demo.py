@@ -18,6 +18,7 @@ import torch
 import json
 import time
 import datetime
+from file_server import start_server, get_local_ip
 
 DEFAULT_CKPT_PATH = 'hahahafofo/Qwen-1_8B-Stable-Diffusion-Prompt'
 OUTPUT_IMAGES_DIR = "output_images"
@@ -38,7 +39,8 @@ def _get_args():
                         help="Demo server port.")
     parser.add_argument("--server-name", type=str, default="0.0.0.0",
                         help="Demo server name.")
-
+    parser.add_argument("--file-server-port", type=int, default=8001,
+                        help="file server port.")
     args = parser.parse_args()
     return args
 
@@ -224,14 +226,15 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
         return _chatbot
 
     with gr.Blocks() as demo:
+        file_server = f"http://{get_local_ip()}:{args.file_server_port}/"
         html_file_path = f"{datetime.datetime.now().strftime('%Y-%m-%d')}.html"
         html_fns = [fn for fn in os.listdir(OUTPUT_HTML_DIR) if fn.endswith(".html")]
 
-        gr.Markdown(f'<a href="{os.path.join(OUTPUT_HTML_DIR, html_file_path)}" target="_blank">{html_file_path}</a>')
+        gr.Markdown(f'<a href="{file_server}{os.path.join(OUTPUT_HTML_DIR, html_file_path)}" target="_blank">{html_file_path}</a>')
         for fn in html_fns:
             if fn == html_file_path:
                 continue
-            gr.Markdown(f'<a href="{os.path.join(OUTPUT_HTML_DIR, fn)} target="_blank"">{fn}</a>')
+            gr.Markdown(f'<a href="{file_server}{os.path.join(OUTPUT_HTML_DIR, fn)} target="_blank"">{fn}</a>')
         with gr.Row():
             with gr.Column(scale=1, min_width=600):
                 image = gr.Image(type="pil")
@@ -308,6 +311,7 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
 
 def main():
     args = _get_args()
+    start_server(server_port=args.file_server_port)
     os.makedirs(OUTPUT_IMAGES_DIR, exist_ok=True)
     os.makedirs(OUTPUT_HTML_DIR, exist_ok=True)
     model, tokenizer, config = _load_model_tokenizer(args)
