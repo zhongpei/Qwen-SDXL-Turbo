@@ -183,6 +183,7 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
                     top_p = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, value=0.9, label="Top-p")
                     top_k = gr.Slider(minimum=0, maximum=100, step=1, value=0, label="Top-k")
                     max_new_tokens = gr.Slider(minimum=1, maximum=1024, step=1, value=100, label="Max New Tokens")
+                with gr.Row():
                     prompt_system_radio = gr.Radio(["中英文翻译", "文言文", "画家", "剧情"], label='prompt system',
                                                    info="角色")
                     prompt_system = gr.Textbox(
@@ -190,6 +191,7 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
                         label='System Template',
                         value="你擅长翻译中文到英语。"
                     )
+                with gr.Row():
                     prompt_template = gr.Textbox(
                         lines=1,
                         label='Prompt Template',
