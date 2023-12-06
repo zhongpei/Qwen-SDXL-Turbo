@@ -9,14 +9,19 @@ from argparse import ArgumentParser
 
 import gradio as gr
 import mdtex2html
-
-import torch
+import piexif
+import os
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers.generation import GenerationConfig
 from diffusers import AutoPipelineForText2Image
 import torch
+import json
+import time
+import datetime
 
 DEFAULT_CKPT_PATH = 'hahahafofo/Qwen-1_8B-Stable-Diffusion-Prompt'
+OUTPUT_IMAGES_DIR = "output_images"
+OUTPUT_HTML_DIR = "output_html"
 
 
 def _get_args():
@@ -89,6 +94,49 @@ def postprocess(self, y):
 gr.Chatbot.postprocess = postprocess
 
 
+def _save_image2html(image, query, prompt):
+    # 将文本信息编码为 JSON 并保存到 EXIF
+    exif_dict = {"0th": {}, "Exif": {}, "1st": {}, "thumbnail": None, "GPS": {}}
+    exif_dict["0th"][piexif.ImageIFD.ImageDescription] = json.dumps({"prompt": prompt})
+    exif_bytes = piexif.dump(exif_dict)
+
+    file_name = f"{int(time.time())}.png"
+    image_path = os.path.join(OUTPUT_IMAGES_DIR, file_name)
+    image.save(image_path, "PNG", exif=exif_bytes)
+    # 创建 HTML 内容
+    # 初始 HTML 结构
+    html_start = "<html><head><title>Image and Prompt History</title></head><body><h1>Image and Prompt History</h1><ul>"
+    html_end = "</ul></body></html>"
+    # 将 HTML 内容写入文件
+    html_file_path = os.path.join(OUTPUT_HTML_DIR, f"{datetime.datetime.now().strftime('%Y-%M-%D')}.html")
+    # 创建新的列表项
+    new_list_item = f"""
+        <li>
+            <p>Image Path: {image_path}</p>
+            <p>Prompt: {prompt}</p>
+            <p>Query: {query}</p>
+            <img src="{image_path}" alt="Generated Image" style="max-width: 100%; height: auto;">
+        </li>
+    """
+
+    # 读取现有的 HTML 文件
+    try:
+        with open(html_file_path, 'r', encoding='utf-8') as file:
+            existing_html = file.read()
+    except FileNotFoundError:
+        # 如果文件不存在，创建一个新的 HTML 结构
+        existing_html = html_start + html_end
+
+    # 在列表结束标签前插入新的列表项
+    updated_html = existing_html.replace(html_end, new_list_item + html_end)
+
+    # 将更新后的 HTML 写回文件
+    with open(html_file_path, 'w', encoding='utf-8') as file:
+        file.write(updated_html)
+
+    return f"HTML content appended to {html_file_path}"
+
+
 def _parse_text(text):
     lines = text.split("\n")
     lines = [line for line in lines if line != ""]
@@ -152,7 +200,9 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
             return
         print(f"===\n{_chatbot} \n\n{_task_history} ====\n")
         print(f"{prompt}")
-        return image_pipe(prompt=prompt, num_inference_steps=num_inference_steps, guidance_scale=0.0).images[0]
+        image_pil = image_pipe(prompt=prompt, num_inference_steps=num_inference_steps, guidance_scale=0.0).images[0]
+        _save_image2html(image_pil, query=_chatbot[-1][0], prompt=prompt)
+        return image_pil
 
     def regenerate(_chatbot, _task_history, prompt_system):
         if not _task_history:
@@ -174,34 +224,48 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
         return _chatbot
 
     with gr.Blocks() as demo:
+        html_file_path = f"{datetime.datetime.now().strftime('%Y-%M-%D')}.html"
+        html_fns = [fn for fn in os.listdir(OUTPUT_HTML_DIR) if fn.endswith(".html")]
+
+        gr.Markdown(f'<a href="{os.path.join(OUTPUT_HTML_DIR, html_file_path)}" target="_blank">{html_file_path}</a>')
+        for fn in html_fns:
+            if fn == html_file_path:
+                continue
+            gr.Markdown(f'<a href="{os.path.join(OUTPUT_HTML_DIR, fn)} target="_blank"">{fn}</a>')
         with gr.Row():
             with gr.Column(scale=1, min_width=600):
-                num_inference_steps = gr.Slider(minimum=1, maximum=60, step=1, value=4, label="Inference Steps")
                 image = gr.Image(type="pil")
                 query = gr.Textbox(lines=4, label='Input')
 
             with gr.Column(scale=1, min_width=600):
-                with gr.Row():
-                    temperature = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, value=0.9, label="Temperature")
-                    top_p = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, value=0.9, label="Top-p")
-                    top_k = gr.Slider(minimum=0, maximum=100, step=1, value=0, label="Top-k")
-                    max_new_tokens = gr.Slider(minimum=1, maximum=1024, step=1, value=100, label="Max New Tokens")
-                with gr.Row():
-                    prompt_system_radio = gr.Radio(["中英文翻译", "文言文", "画家", "剧情"], label='角色',
-                                                   info="根据输入选择合适的角色")
-                    prompt_system = gr.Textbox(
+                with gr.Tab(label="Qwen"):
+                    with gr.Row():
+                        prompt_system_radio = gr.Radio(
+                            ["中英文翻译", "文言文", "画家", "剧情"],
+                            label='角色',
+                            info="根据输入选择合适的角色"
+                        )
+                        prompt_system = gr.Textbox(
+                            lines=1,
+                            label='System Template',
+                            value="你擅长翻译中文到英语。"
+                        )
+
+                    prompt_template = gr.Textbox(
                         lines=1,
-                        label='System Template',
-                        value="你擅长翻译中文到英语。"
+                        label='Prompt Template',
+                        value="必须使用英语根据主题描述一副画面:"
                     )
+                    chatbot = gr.Chatbot(label='Qwen-Chat', elem_classes="control-height")
 
-                prompt_template = gr.Textbox(
-                    lines=1,
-                    label='Prompt Template',
-                    value="必须使用英语根据主题描述一副画面:"
-                )
-                chatbot = gr.Chatbot(label='Qwen-Chat', elem_classes="control-height")
-
+                with gr.Tab(label="Config"):
+                    with gr.Row():
+                        temperature = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, value=0.9, label="Temperature")
+                        top_p = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, value=0.9, label="Top-p")
+                        top_k = gr.Slider(minimum=0, maximum=100, step=1, value=0, label="Top-k")
+                        max_new_tokens = gr.Slider(minimum=1, maximum=1024, step=1, value=100, label="Max New Tokens")
+                    with gr.Row():
+                        num_inference_steps = gr.Slider(minimum=1, maximum=60, step=1, value=4, label="Image Steps")
                 task_history = gr.State([])
 
         with gr.Row():
@@ -244,7 +308,8 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
 
 def main():
     args = _get_args()
-
+    os.makedirs(OUTPUT_IMAGES_DIR, exist_ok=True)
+    os.makedirs(OUTPUT_HTML_DIR, exist_ok=True)
     model, tokenizer, config = _load_model_tokenizer(args)
     pipe = _load_sdxl_turbo()
     _launch_demo(args, pipe, model, tokenizer, config)
