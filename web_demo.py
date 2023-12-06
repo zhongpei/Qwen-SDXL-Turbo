@@ -184,8 +184,7 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
                     top_k = gr.Slider(minimum=0, maximum=100, step=1, value=0, label="Top-k")
                     max_new_tokens = gr.Slider(minimum=1, maximum=1024, step=1, value=100, label="Max New Tokens")
                 with gr.Row():
-                    prompt_system_radio = gr.Radio(["中英文翻译", "文言文", "画家", "剧情"], label='prompt system',
-                                                   info="角色")
+                    prompt_system_radio = gr.Radio(["中英文翻译", "文言文", "画家", "剧情"], label='角色', info="根据输入选择合适的角色")
                     prompt_system = gr.Textbox(
                         lines=1,
                         label='System Template',
