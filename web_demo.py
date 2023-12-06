@@ -108,7 +108,7 @@ def _save_image2html(image, query, prompt):
     html_start = "<html><head><title>Image and Prompt History</title></head><body><h1>Image and Prompt History</h1><ul>"
     html_end = "</ul></body></html>"
     # 将 HTML 内容写入文件
-    html_file_path = os.path.join(OUTPUT_HTML_DIR, f"{datetime.datetime.now().strftime('%Y-%M-%D')}.html")
+    html_file_path = os.path.join(OUTPUT_HTML_DIR, f"{datetime.datetime.now().strftime('%Y-%m-%d')}.html")
     # 创建新的列表项
     new_list_item = f"""
         <li>
@@ -224,7 +224,7 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
         return _chatbot
 
     with gr.Blocks() as demo:
-        html_file_path = f"{datetime.datetime.now().strftime('%Y-%M-%D')}.html"
+        html_file_path = f"{datetime.datetime.now().strftime('%Y-%m-%d')}.html"
         html_fns = [fn for fn in os.listdir(OUTPUT_HTML_DIR) if fn.endswith(".html")]
 
         gr.Markdown(f'<a href="{os.path.join(OUTPUT_HTML_DIR, html_file_path)}" target="_blank">{html_file_path}</a>')
