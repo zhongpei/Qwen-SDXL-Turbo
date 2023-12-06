@@ -122,13 +122,19 @@ def _parse_text(text):
 
 
 def _launch_demo(args, image_pipe, model, tokenizer, config):
-    def predict(_query, _chatbot, _task_history, prompt_template):
+    def predict(_query, _chatbot, _task_history, prompt_template: str, prompt_system: str):
         print(f"User: {_parse_text(_query)}")
         _chatbot.append((_parse_text(_query), ""))
         full_response = ""
         _query = f"{prompt_template}\n{_query}"
 
-        for response in model.chat_stream(tokenizer, _query, history=_task_history, generation_config=config):
+        for response in model.chat_stream(
+                tokenizer,
+                _query,
+                history=_task_history,
+                generation_config=config,
+                system=prompt_system
+        ):
             _chatbot[-1] = (_parse_text(_query), _parse_text(response))
 
             yield _chatbot
@@ -148,13 +154,13 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
         print(f"{prompt}")
         return image_pipe(prompt=prompt, num_inference_steps=1, guidance_scale=0.0).images[0]
 
-    def regenerate(_chatbot, _task_history, ):
+    def regenerate(_chatbot, _task_history, prompt_system):
         if not _task_history:
             yield _chatbot
             return
         item = _task_history.pop(-1)
         _chatbot.pop(-1)
-        yield from predict(item[0], _chatbot, _task_history, "")
+        yield from predict(item[0], _chatbot, _task_history, prompt_template="", prompt_system=prompt_system)
 
     def reset_user_input():
         return gr.update(value="")
@@ -176,7 +182,12 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
                     temperature = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, value=0.9, label="Temperature")
                     top_p = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, value=0.9, label="Top-p")
                     top_k = gr.Slider(minimum=0, maximum=100, step=1, value=0, label="Top-k")
-                    max_new_tokens = gr.Slider(minimum=1, maximum=1024, step=1, value=512, label="Max New Tokens")
+                    max_new_tokens = gr.Slider(minimum=1, maximum=1024, step=1, value=100, label="Max New Tokens")
+                    prompt_system = gr.Textbox(
+                        lines=1,
+                        label='System Template',
+                        value="你是绘画大师，必须使用英语根据主题描述一副画面，增加元素的具体性和细节，加强情况和相关性。如果有人物，对面部表情、动作和场景的感觉增加细节。"
+                    )
                     prompt_template = gr.Textbox(
                         lines=1,
                         label='Prompt Template',
@@ -201,11 +212,12 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
             outputs=[],
         )
 
-        submit_btn.click(predict, [query, chatbot, task_history, prompt_template], [chatbot], show_progress=True)
+        submit_btn.click(predict, [query, chatbot, task_history, prompt_template, prompt_system], [chatbot],
+                         show_progress=True)
         submit_btn.click(reset_user_input, [], [query])
         empty_btn.click(reset_state, [chatbot, task_history], outputs=[chatbot], show_progress=True)
         image_btn.click(draw_image, [chatbot, task_history], outputs=[image], show_progress=True)
-        regen_btn.click(regenerate, [chatbot, task_history], [chatbot], show_progress=True)
+        regen_btn.click(regenerate, [chatbot, task_history, prompt_system], [chatbot], show_progress=True)
 
     demo.queue().launch(
         share=args.share,
