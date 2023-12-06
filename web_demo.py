@@ -211,8 +211,8 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
             "画家": "你是绘画大师，擅长描绘画面细节。",
             "剧情": "你是剧作家，擅长创作连续的漫画脚本。"
         }
-        prompt_system_radio.change(lambda val: prompt_system.update(PROMPT_SYSTEM_DICT[val]),
-                                   inputs=[prompt_system_radio], outputs=[])
+        prompt_system_radio.change(lambda val: (PROMPT_SYSTEM_DICT[val]),
+                                   inputs=[prompt_system_radio], outputs=[prompt_system])
         temperature.change(lambda val: config.update(temperature=val), inputs=[temperature], outputs=[])
         top_k.change(lambda val: config.update(top_k=val), inputs=[top_k], outputs=[])
         top_p.change(lambda val: config.update(top_p=val), inputs=[top_p], outputs=[])
