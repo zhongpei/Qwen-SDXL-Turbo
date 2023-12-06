@@ -189,28 +189,28 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
         with gr.Row():
             empty_btn = gr.Button("🧹 Clear History (清除历史)")
             submit_btn = gr.Button("🚀 Submit (发送)")
-            image_btn = gr.Button("🚀 Image (生成)")
             regen_btn = gr.Button("🤔️ Regenerate (重试)")
+            image_btn = gr.Button("🎨 Image (生成)")
 
         temperature.change(
             lambda val: config.update({"temperature": val}),
             inputs=[temperature],
-            outputs=[temperature],
+            outputs=[],
         )
         top_k.change(
             lambda val: config.update({"top_k": val}),
             inputs=[top_k],
-            outputs=[top_k],
+            outputs=[],
         )
         top_p.change(
             lambda val: config.update({"top_p": val}),
             inputs=[top_p],
-            outputs=[top_p],
+            outputs=[],
         )
         max_new_tokens.change(
             lambda val: config.update({"max_new_tokens": val}),
             inputs=[max_new_tokens],
-            outputs=[max_new_tokens],
+            outputs=[],
         )
 
         submit_btn.click(predict, [query, chatbot, task_history, prompt_template], [chatbot], show_progress=True)
