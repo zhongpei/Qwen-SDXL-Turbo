@@ -180,7 +180,7 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
                     prompt_template = gr.Textbox(
                         lines=1,
                         label='Prompt Template',
-                        default="你是绘画大师，必须使用英语根据主题描述一副画面:"
+                        value="你是绘画大师，必须使用英语根据主题描述一副画面:"
                     )
                 chatbot = gr.Chatbot(label='Qwen-Chat', elem_classes="control-height")
                 query = gr.Textbox(lines=4, label='Input')
