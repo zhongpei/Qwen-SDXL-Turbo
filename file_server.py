@@ -25,7 +25,8 @@ def get_local_ip():
 class MyHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
         # 指定要提供的文件的目录
-        self.path = OUTPUT_HTML_DIR + self.path
+        if OUTPUT_HTML_DIR not in self.path:
+            self.path = OUTPUT_HTML_DIR + self.path
         print(f"请求的文件路径为：{self.path}")
         return http.server.SimpleHTTPRequestHandler.do_GET(self)
 
