@@ -3,7 +3,7 @@ qwen  create prompt for sdxl
 
 ### model
 
-[download](https://huggingface.co/hahahafofo/Qwen-1.8B-Stable-Diffusion-Prompt)
+[download](https://huggingface.co/hahahafofo/Qwen-1_8B-Stable-Diffusion-Prompt)
 
 
 ### install

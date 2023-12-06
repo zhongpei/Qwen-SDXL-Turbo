@@ -16,7 +16,7 @@ from transformers.generation import GenerationConfig
 from diffusers import AutoPipelineForText2Image
 import torch
 
-DEFAULT_CKPT_PATH = 'hahahafofo/Qwen-1.8B-Stable-Diffusion-Prompt'
+DEFAULT_CKPT_PATH = 'hahahafofo/Qwen-1_8B-Stable-Diffusion-Prompt'
 
 
 def _get_args():
