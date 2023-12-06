@@ -195,7 +195,7 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
         _task_history.append((_query, full_response))
         print(f"Qwen-Chat: {_parse_text(full_response)}")
 
-    def draw_image(_chatbot, _task_history, num_inference_steps, args):
+    def draw_image(_chatbot, _task_history, num_inference_steps,):
         if len(_task_history) == 0:
             return
         prompt = _task_history[-1][-1]
