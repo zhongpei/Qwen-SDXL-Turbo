@@ -1,6 +1,7 @@
 import json
 
-
+config_dict = {}
+visited_keys = []
 def get_config_item_or_set_default(key, default_value, validator, disable_empty_as_none=False):
     global config_dict, visited_keys
 
