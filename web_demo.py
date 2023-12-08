@@ -174,7 +174,7 @@ def _parse_text(text):
 
 
 def _launch_demo(args, image_pipe, model, tokenizer, config):
-    def predict(_query, _chatbot, _task_history, prompt_template: str, prompt_system: str):
+    def predict(_query, _chatbot, _task_history, prompt_template: str="", prompt_system: str="You are a helpful assistant"):
         print(f"User: {_parse_text(_query)}")
         _chatbot.append((_parse_text(_query), ""))
         full_response = ""
@@ -236,6 +236,14 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
 
             with gr.Column(scale=1, min_width=600):
                 with gr.Tab(label="Qwen"):
+                    temperature = gr.Slider(
+                        minimum=0.0,
+                        maximum=1.0,
+                        step=0.01,
+                        value=0.9,
+                        label="Temperature",
+                        info="越小越遵循输入，越大越充满想象"
+                    )
                     with gr.Row():
                         prompt_system_radio = gr.Radio(
                             ["中英文翻译", "文言文", "画家", "剧情", "AI助手"],
@@ -257,17 +265,22 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
 
                 with gr.Tab(label="Config"):
                     with gr.Row():
-                        temperature = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, value=0.9, label="Temperature")
                         top_p = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, value=1.0, label="Top-p")
                         top_k = gr.Slider(minimum=0, maximum=100, step=1, value=50, label="Top-k")
                         max_new_tokens = gr.Slider(minimum=1, maximum=1024, step=1, value=100, label="Max New Tokens")
-                        repetition_penalty = gr.Slider(minimum=1.0, maximum=2.0, step=0.01, value=1.1,
-                                                       label="重复惩罚")
+                        repetition_penalty = gr.Slider(
+                            minimum=1.0,
+                            maximum=2.0,
+                            step=0.01,
+                            value=1.1,
+                            label="repetition penalty",
+                            info="重复惩罚"
+                        )
                     with gr.Row():
                         num_inference_steps = gr.Slider(minimum=1, maximum=60, step=1, value=4, label="Image Steps")
                 task_history = gr.State([])
 
-                with gr.Tab(label="生成记录"):
+                with gr.Tab(label="History"):
                     file_server = f"http://{get_local_ip()}:{args.file_server_port}/"
                     html_file_path = f"{datetime.datetime.now().strftime('%Y-%m-%d')}.html"
                     html_fns = [fn for fn in os.listdir(OUTPUT_HTML_DIR) if fn.endswith(".html")]
@@ -280,9 +293,10 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
 
         with gr.Row():
             empty_btn = gr.Button("🧹 Clear History (清除历史)")
-            submit_btn = gr.Button("🚀 Submit (发送)")
+            submit_btn = gr.Button("🚀 Submit (生成)")
             regen_btn = gr.Button("🤔️ Regenerate (重试)")
             image_btn = gr.Button("🎨 Image (生成)")
+            talk_btn = gr.Button("🚀 Submit (聊天)")
 
         PROMPT_SYSTEM_DICT = {
             "中英文翻译": "你擅长翻译中文到英语。",
@@ -306,6 +320,8 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
             inputs=[repetition_penalty],
             outputs=[],
         )
+        talk_btn.click(predict, [query, chatbot, task_history, "", prompt_system], [chatbot],
+                         show_progress=True)
 
         submit_btn.click(predict, [query, chatbot, task_history, prompt_template, prompt_system], [chatbot],
                          show_progress=True)
