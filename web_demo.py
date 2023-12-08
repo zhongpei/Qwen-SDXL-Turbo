@@ -234,12 +234,18 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
         return _chatbot
 
     with gr.Blocks() as demo:
+        task_history = gr.State([])
 
         with gr.Row():
             with gr.Column(scale=1, min_width=600):
                 image = gr.Image(type="pil")
                 query = gr.Textbox(lines=4, label='Input')
-
+                with gr.Row():
+                    empty_btn = gr.Button("🧹 Clear History (清除历史)")
+                    submit_btn = gr.Button("🚀 Submit (生成)")
+                    regen_btn = gr.Button("🤔️ Regenerate (重试)")
+                    image_btn = gr.Button("🎨 Image (生成)")
+                    talk_btn = gr.Button("💬 Talk (聊天)")
             with gr.Column(scale=1, min_width=600):
                 with gr.Tab(label="Qwen"):
                     temperature = gr.Slider(
@@ -284,7 +290,6 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
                         )
                     with gr.Row():
                         num_inference_steps = gr.Slider(minimum=1, maximum=60, step=1, value=4, label="Image Steps")
-                task_history = gr.State([])
 
                 with gr.Tab(label="History"):
                     file_server = f"http://{get_local_ip()}:{args.file_server_port}/"
@@ -297,12 +302,8 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
                             continue
                         gr.Markdown(f'<a href="{file_server}{fn}" target="_blank">{fn}</a>')
 
-        with gr.Row():
-            empty_btn = gr.Button("🧹 Clear History (清除历史)")
-            submit_btn = gr.Button("🚀 Submit (生成)")
-            regen_btn = gr.Button("🤔️ Regenerate (重试)")
-            image_btn = gr.Button("🎨 Image (生成)")
-            talk_btn = gr.Button("🚀 Submit (聊天)")
+
+
 
         PROMPT_SYSTEM_DICT = {
             "中英文翻译": "你擅长翻译中文到英语。",
