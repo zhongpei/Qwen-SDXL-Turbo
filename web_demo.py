@@ -68,6 +68,7 @@ def _load_model_tokenizer(args):
         resume_download=True,
 
     )
+    config.max_new_tokens = 100
 
     return model, tokenizer, config
 
@@ -195,7 +196,7 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
         _task_history.append((_query, full_response))
         print(f"Qwen-Chat: {_parse_text(full_response)}")
 
-    def draw_image(_chatbot, _task_history, num_inference_steps,):
+    def draw_image(_chatbot, _task_history, num_inference_steps, ):
         if len(_task_history) == 0:
             return
         prompt = _task_history[-1][-1]
@@ -235,7 +236,7 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
         for fn in html_fns:
             if fn == html_file_path:
                 continue
-            gr.Markdown(f'<a href="{file_server}{fn} target="_blank"">{fn}</a>')
+            gr.Markdown(f'<a href="{file_server}{fn}" target="_blank">{fn}</a>')
         with gr.Row():
             with gr.Column(scale=1, min_width=600):
                 image = gr.Image(type="pil")
@@ -245,7 +246,7 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
                 with gr.Tab(label="Qwen"):
                     with gr.Row():
                         prompt_system_radio = gr.Radio(
-                            ["中英文翻译", "文言文", "画家", "剧情"],
+                            ["中英文翻译", "文言文", "画家", "剧情", "AI助手"],
                             label='角色',
                             info="根据输入选择合适的角色"
                         )
@@ -284,7 +285,8 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
             "中英文翻译": "你擅长翻译中文到英语。",
             "文言文": "你擅长文言文翻译为英语。",
             "画家": "你是绘画大师，擅长描绘画面细节。",
-            "剧情": "你是剧作家，擅长创作连续的漫画脚本。"
+            "剧情": "你是剧作家，擅长创作连续的漫画脚本。",
+            "AI助手": "You are a helpful assistant",
         }
         prompt_system_radio.change(lambda val: (PROMPT_SYSTEM_DICT[val]),
                                    inputs=[prompt_system_radio], outputs=[prompt_system])
