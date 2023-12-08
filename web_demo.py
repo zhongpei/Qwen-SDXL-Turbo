@@ -21,6 +21,7 @@ import datetime
 from file_server import start_server, get_local_ip
 
 DEFAULT_CKPT_PATH = 'hahahafofo/Qwen-1_8B-Stable-Diffusion-Prompt'
+DEFAULT_SDXL_PATH = "Lykon/dreamshaper-xl-turbo" # "stabilityai/sdxl-turbo"
 OUTPUT_IMAGES_DIR = "output_images"
 OUTPUT_HTML_DIR = "output_html"
 
@@ -29,6 +30,8 @@ def _get_args():
     parser = ArgumentParser()
     parser.add_argument("-c", "--checkpoint-path", type=str, default=DEFAULT_CKPT_PATH,
                         help="Checkpoint name or path, default to %(default)r")
+    parser.add_argument("-x", "--sdxl-path", type=str, default=DEFAULT_SDXL_PATH,
+                        help="SDXL Checkpoint name or path, default to %(default)r")
     parser.add_argument("--cpu-only", action="store_true", help="Run demo with CPU only")
 
     parser.add_argument("--share", action="store_true", default=False,
@@ -73,9 +76,9 @@ def _load_model_tokenizer(args):
     return model, tokenizer, config
 
 
-def _load_sdxl_turbo():
+def _load_sdxl_turbo(args):
     pipe = AutoPipelineForText2Image.from_pretrained(
-        "stabilityai/sdxl-turbo",
+        args.sdxl_path,
         torch_dtype=torch.float16,
         variant="fp16"
     )
@@ -352,7 +355,7 @@ def main():
     os.makedirs(OUTPUT_IMAGES_DIR, exist_ok=True)
     os.makedirs(OUTPUT_HTML_DIR, exist_ok=True)
     model, tokenizer, config = _load_model_tokenizer(args)
-    pipe = _load_sdxl_turbo()
+    pipe = _load_sdxl_turbo(args)
     _launch_demo(args, pipe, model, tokenizer, config)
 
 
