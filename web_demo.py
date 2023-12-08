@@ -19,9 +19,10 @@ import json
 import time
 import datetime
 from file_server import start_server, get_local_ip
+import config as conf
 
 DEFAULT_CKPT_PATH = 'hahahafofo/Qwen-1_8B-Stable-Diffusion-Prompt'
-DEFAULT_SDXL_PATH = "stabilityai/sdxl-turbo" # "Lykon/dreamshaper-xl-turbo"
+DEFAULT_SDXL_PATH = "Lykon/dreamshaper-xl-turbo"  # "stabilityai/sdxl-turbo"
 OUTPUT_IMAGES_DIR = "output_images"
 OUTPUT_HTML_DIR = "output_html"
 
@@ -205,7 +206,7 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
         _task_history.append((_query, full_response))
         print(f"Qwen-Chat: {_parse_text(full_response)}")
 
-    def draw_image(_chatbot, _task_history, num_inference_steps, ):
+    def draw_image(_chatbot, _task_history, aspect_ratios_selection, num_inference_steps, ):
         if len(_task_history) == 0:
             return
         prompt = _task_history[-1][-1]
@@ -213,7 +214,7 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
             return
         print(f"===\n{_chatbot} \n\n{_task_history} ====\n")
         print(f"{prompt}")
-        image_pil = image_pipe(prompt=prompt, num_inference_steps=num_inference_steps, guidance_scale=0.0).images[0]
+        image_pil = image_pipe(prompt=prompt, num_inference_steps=num_inference_steps, guidance_scale=0.0, resolution=aspect_ratios_selection).images[0]
         _save_image2html(image_pil, query=_chatbot[-1][0], prompt=prompt)
         return image_pil
 
@@ -292,7 +293,14 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
                             info="重复惩罚"
                         )
                     with gr.Row():
-                        num_inference_steps = gr.Slider(minimum=1, maximum=60, step=1, value=4, label="Image Steps")
+                        aspect_ratios_selection = gr.Radio(
+                            label='Aspect Ratios',
+                            choices=conf.available_aspect_ratios,
+                            value=conf.default_aspect_ratio,
+                            info='width × height',
+                            elem_classes='aspect_ratios'
+                        )
+                        num_inference_steps = gr.Slider(minimum=1, maximum=60, step=1, value=16, label="Image Steps")
 
                 with gr.Tab(label="History"):
                     file_server = f"http://{get_local_ip()}:{args.file_server_port}/"
@@ -304,9 +312,6 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
                         if fn == html_file_path:
                             continue
                         gr.Markdown(f'<a href="{file_server}{fn}" target="_blank">{fn}</a>')
-
-
-
 
         PROMPT_SYSTEM_DICT = {
             "中英文翻译": "你擅长翻译中文到英语。",
@@ -337,7 +342,8 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
                          show_progress=True)
         submit_btn.click(reset_user_input, [], [query])
         empty_btn.click(reset_state, [chatbot, task_history], outputs=[chatbot], show_progress=True)
-        image_btn.click(draw_image, [chatbot, task_history, num_inference_steps], outputs=[image],
+        image_btn.click(draw_image, [chatbot, task_history, aspect_ratios_selection, num_inference_steps],
+                        outputs=[image],
                         show_progress=True)
         regen_btn.click(regenerate, [chatbot, task_history, prompt_system], [chatbot], show_progress=True)
 
