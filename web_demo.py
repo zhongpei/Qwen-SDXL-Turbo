@@ -174,18 +174,24 @@ def _parse_text(text):
 
 
 def _launch_demo(args, image_pipe, model, tokenizer, config):
-    def predict(_query, _chatbot, _task_history, prompt_template: str="", prompt_system: str="You are a helpful assistant"):
+    def predict(
+            _query,
+            _chatbot,
+            _task_history,
+            _prompt_system: str = "You are a helpful assistant",
+            _prompt_template: str = ""
+    ):
         print(f"User: {_parse_text(_query)}")
         _chatbot.append((_parse_text(_query), ""))
         full_response = ""
-        _query = f"{prompt_template}\n{_query}"
+        _query = f"{_prompt_template}\n{_query}"
 
         for response in model.chat_stream(
                 tokenizer,
                 _query,
                 history=_task_history,
                 generation_config=config,
-                system=prompt_system
+                system=_prompt_system
         ):
             _chatbot[-1] = (_parse_text(_query), _parse_text(response))
 
@@ -208,13 +214,13 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
         _save_image2html(image_pil, query=_chatbot[-1][0], prompt=prompt)
         return image_pil
 
-    def regenerate(_chatbot, _task_history, prompt_system):
+    def regenerate(_chatbot, _task_history, _prompt_system):
         if not _task_history:
             yield _chatbot
             return
         item = _task_history.pop(-1)
         _chatbot.pop(-1)
-        yield from predict(item[0], _chatbot, _task_history, prompt_template="", prompt_system=prompt_system)
+        yield from predict(item[0], _chatbot, _task_history, _prompt_template="", _prompt_system=_prompt_system)
 
     def reset_user_input():
         return gr.update(value="")
@@ -320,10 +326,10 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
             inputs=[repetition_penalty],
             outputs=[],
         )
-        talk_btn.click(predict, [query, chatbot, task_history, "", prompt_system], [chatbot],
-                         show_progress=True)
+        talk_btn.click(predict, [query, chatbot, task_history, prompt_system], [chatbot],
+                       show_progress=True)
 
-        submit_btn.click(predict, [query, chatbot, task_history, prompt_template, prompt_system], [chatbot],
+        submit_btn.click(predict, [query, chatbot, task_history, prompt_system, prompt_template], [chatbot],
                          show_progress=True)
         submit_btn.click(reset_user_input, [], [query])
         empty_btn.click(reset_state, [chatbot, task_history], outputs=[chatbot], show_progress=True)
