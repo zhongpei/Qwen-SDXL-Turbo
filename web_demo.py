@@ -71,7 +71,7 @@ def _load_model_tokenizer(args):
         resume_download=True,
 
     )
-    config.max_new_tokens = 100
+    config.max_new_tokens = 77
 
     return model, tokenizer, config
 
@@ -282,7 +282,7 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
                     with gr.Row():
                         top_p = gr.Slider(minimum=0.0, maximum=1.0, step=0.01, value=1.0, label="Top-p")
                         top_k = gr.Slider(minimum=0, maximum=100, step=1, value=50, label="Top-k")
-                        max_new_tokens = gr.Slider(minimum=1, maximum=1024, step=1, value=100, label="Max New Tokens")
+                        max_new_tokens = gr.Slider(minimum=1, maximum=1024, step=1, value=77, label="Max New Tokens")
                         repetition_penalty = gr.Slider(
                             minimum=1.0,
                             maximum=2.0,
