@@ -21,7 +21,7 @@ import datetime
 from file_server import start_server, get_local_ip
 
 DEFAULT_CKPT_PATH = 'hahahafofo/Qwen-1_8B-Stable-Diffusion-Prompt'
-DEFAULT_SDXL_PATH = "Lykon/dreamshaper-xl-turbo" # "stabilityai/sdxl-turbo"
+DEFAULT_SDXL_PATH = "stabilityai/sdxl-turbo" # "Lykon/dreamshaper-xl-turbo"
 OUTPUT_IMAGES_DIR = "output_images"
 OUTPUT_HTML_DIR = "output_html"
 
