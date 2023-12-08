@@ -251,7 +251,7 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
         with gr.Row():
             with gr.Column(scale=1, min_width=600):
                 image = gr.Image(type="pil")
-                query = gr.Textbox(lines=4, label='Input')
+                query = gr.Textbox(lines=2, label='Input')
                 with gr.Row():
                     empty_btn = gr.Button("🧹 Clear History (清除历史)")
                     submit_btn = gr.Button("🚀 Submit (生成)")
