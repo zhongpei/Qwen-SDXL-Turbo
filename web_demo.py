@@ -213,13 +213,15 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
         if len(prompt) == 0:
             return
         print(f"===\n{_chatbot} \n\n{_task_history} ====\n")
-        print(f"{prompt} {aspect_ratios_selection} {num_inference_steps}")
+        height = int(aspect_ratios_selection.split("*")[1])
+        width = int(aspect_ratios_selection.split("*")[0])
+        print(f"{prompt} {height} * {width}  {num_inference_steps}")
         image_pil = image_pipe(
             prompt=prompt,
             num_inference_steps=num_inference_steps,
             guidance_scale=0.0,
-            height=aspect_ratios_selection.split("*")[1],
-            width=aspect_ratios_selection.split("*")[0],
+            height=height,
+            width=width,
         ).images[0]
         _save_image2html(image_pil, query=_chatbot[-1][0], prompt=prompt)
         return image_pil
