@@ -228,15 +228,7 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
         return _chatbot
 
     with gr.Blocks() as demo:
-        file_server = f"http://{get_local_ip()}:{args.file_server_port}/"
-        html_file_path = f"{datetime.datetime.now().strftime('%Y-%m-%d')}.html"
-        html_fns = [fn for fn in os.listdir(OUTPUT_HTML_DIR) if fn.endswith(".html")]
 
-        gr.Markdown(f'<a href="{file_server}{html_file_path}" target="_blank">{html_file_path}</a>')
-        for fn in html_fns:
-            if fn == html_file_path:
-                continue
-            gr.Markdown(f'<a href="{file_server}{fn}" target="_blank">{fn}</a>')
         with gr.Row():
             with gr.Column(scale=1, min_width=600):
                 image = gr.Image(type="pil")
@@ -274,6 +266,17 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
                     with gr.Row():
                         num_inference_steps = gr.Slider(minimum=1, maximum=60, step=1, value=4, label="Image Steps")
                 task_history = gr.State([])
+
+                with gr.Tab(label="生成记录"):
+                    file_server = f"http://{get_local_ip()}:{args.file_server_port}/"
+                    html_file_path = f"{datetime.datetime.now().strftime('%Y-%m-%d')}.html"
+                    html_fns = [fn for fn in os.listdir(OUTPUT_HTML_DIR) if fn.endswith(".html")]
+
+                    gr.Markdown(f'<a href="{file_server}{html_file_path}" target="_blank">{html_file_path}</a>')
+                    for fn in html_fns:
+                        if fn == html_file_path:
+                            continue
+                        gr.Markdown(f'<a href="{file_server}{fn}" target="_blank">{fn}</a>')
 
         with gr.Row():
             empty_btn = gr.Button("🧹 Clear History (清除历史)")
