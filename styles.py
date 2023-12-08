@@ -40,4 +40,10 @@ for styles_file in styles_files:
         print(str(e))
         print(f'Failed to load style file {styles_file}')
 
+
+def apply_style(style, positive):
+    p, n = styles[style]
+    return p.replace('{prompt}', positive).splitlines(), n.splitlines()
+
+
 style_keys = list(styles.keys())

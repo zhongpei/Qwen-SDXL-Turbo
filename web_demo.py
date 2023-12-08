@@ -268,23 +268,24 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
                         label="Temperature",
                         info="越小越遵循输入，越大越充满想象"
                     )
+
+                    prompt_system_radio = gr.Radio(
+                        ["中英文翻译", "文言文", "画家", "剧情", "AI助手"],
+                        label='角色',
+                        info="根据输入选择合适的角色"
+                    )
                     with gr.Row():
-                        prompt_system_radio = gr.Radio(
-                            ["中英文翻译", "文言文", "画家", "剧情", "AI助手"],
-                            label='角色',
-                            info="根据输入选择合适的角色"
-                        )
                         prompt_system = gr.Textbox(
                             lines=1,
                             label='System Template',
                             value="你擅长翻译中文到英语。"
                         )
 
-                    prompt_template = gr.Textbox(
-                        lines=1,
-                        label='Prompt Template',
-                        value="必须使用英语根据主题描述一副画面:"
-                    )
+                        prompt_template = gr.Textbox(
+                            lines=1,
+                            label='Prompt Template',
+                            value="必须使用英语根据主题描述一副画面:"
+                        )
                     chatbot = gr.Chatbot(label='Qwen-Chat', elem_classes="control-height")
 
                 with gr.Tab(label="Config"):
@@ -300,15 +301,15 @@ def _launch_demo(args, image_pipe, model, tokenizer, config):
                             label="repetition penalty",
                             info="重复惩罚"
                         )
-                    with gr.Row():
-                        aspect_ratios_selection = gr.Radio(
-                            label='Aspect Ratios',
-                            choices=conf.available_aspect_ratios,
-                            value=conf.default_aspect_ratio,
-                            info='width × height',
-                            elem_classes='aspect_ratios'
-                        )
-                        num_inference_steps = gr.Slider(minimum=1, maximum=60, step=1, value=16, label="Image Steps")
+
+                    aspect_ratios_selection = gr.Radio(
+                        label='Aspect Ratios',
+                        choices=conf.available_aspect_ratios,
+                        value=conf.default_aspect_ratio,
+                        info='width × height',
+                        elem_classes='aspect_ratios'
+                    )
+                    num_inference_steps = gr.Slider(minimum=1, maximum=60, step=1, value=16, label="Image Steps")
 
                 with gr.Tab(label="History"):
                     file_server = f"http://{get_local_ip()}:{args.file_server_port}/"
