@@ -34,7 +34,7 @@ def _get_args():
     parser.add_argument("-x", "--sdxl-path", type=str, default=DEFAULT_SDXL_PATH,
                         help="SDXL Checkpoint name or path, default to %(default)r")
     parser.add_argument("--cpu-only", action="store_true", help="Run demo with CPU only")
-
+    parser.add_argument("--qwen-only", action="store_true", help="Run demo with qwen only")
     parser.add_argument("--share", action="store_true", default=False,
                         help="Create a publicly shareable link for the interface.")
     parser.add_argument("--inbrowser", action="store_true", default=False,
@@ -370,7 +370,10 @@ def main():
     os.makedirs(OUTPUT_IMAGES_DIR, exist_ok=True)
     os.makedirs(OUTPUT_HTML_DIR, exist_ok=True)
     model, tokenizer, config = _load_model_tokenizer(args)
-    pipe = _load_sdxl_turbo(args)
+    if not args.qwen_only:
+        pipe = _load_sdxl_turbo(args)
+    else:
+        pipe = lambda **kwargs: None
     _launch_demo(args, pipe, model, tokenizer, config)
 
 
