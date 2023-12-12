@@ -31,6 +31,7 @@ Use the following command-line arguments to operate this script:
 - `--server-port`: The port number for the demo server. Default is `8000`.
 - `--server-name`: The name for the demo server. Default is `0.0.0.0`.
 - `--file-server-port`: Port number for the file server. Default is `8001`.
+- `--qwen-only`: Only use Qwen to generate prompts. Default is `False`.
 
 ## Example
 
@@ -77,6 +78,7 @@ pip install -r requirements.txt
 - `--server-port`：演示服务器的端口号。默认为 `8000`。
 - `--server-name`：演示服务器的名称。默认为 `0.0.0.0`。
 - `--file-server-port`：文件服务器的端口号。默认为 `8001`。
+- `--qwen-only`: 仅使用 Qwen 生成 Prompt。默认为 `False`。
 
 ## 示例
 
